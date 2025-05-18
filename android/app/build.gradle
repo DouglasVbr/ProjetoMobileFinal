@@ -85,6 +85,14 @@ android {
         versionCode 1
         versionName "1.0"
     }
+
+    configurations.all {
+        resolutionStrategy {
+            force 'androidx.core:core:1.13.1'
+            exclude group: 'com.android.support'
+        }
+    }
+
     signingConfigs {
         debug {
             storeFile file('debug.keystore')
