@@ -15,7 +15,7 @@ export type RootStackParamList = {
   Produtos: undefined;
   Agendamento: undefined;
   Dashboard: undefined;
-  // Adicionar outras rotas conforme necessário
+  //  rotas
 };
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
