@@ -1,15 +1,15 @@
-import React, {useEffect, useState} from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   View,
   Text,
   TextInput,
   Button,
   FlatList,
-  TouchableOpacity,
   Alert,
 } from 'react-native';
 // @ts-ignore
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import firestore from '@react-native-firebase/firestore';
 import styles from '../styles/ClienteScreenStyles';
 
 interface Cliente {
@@ -17,6 +17,7 @@ interface Cliente {
   nome: string;
   telefone: string;
   email: string;
+  senha: string;
 }
 
 export default function ClienteScreen() {
@@ -24,11 +25,26 @@ export default function ClienteScreen() {
   const [nome, setNome] = useState('');
   const [telefone, setTelefone] = useState('');
   const [email, setEmail] = useState('');
+  const [senha, setSenha] = useState('');
   const [editando, setEditando] = useState<string | null>(null);
 
   useEffect(() => {
-    carregarClientes();
+    carregarClientesFirestore();
   }, []);
+
+  async function carregarClientesFirestore() {
+    try {
+      const snapshot = await firestore().collection('clientes').get();
+      const lista: Cliente[] = [];
+      snapshot.forEach(doc => {
+        lista.push({ id: doc.id, ...doc.data() } as Cliente);
+      });
+      setClientes(lista);
+      await AsyncStorage.setItem('clientes', JSON.stringify(lista));
+    } catch (error) {
+      carregarClientes();
+    }
+  }
 
   async function carregarClientes() {
     const data = await AsyncStorage.getItem('clientes');
@@ -46,45 +62,40 @@ export default function ClienteScreen() {
     setNome('');
     setTelefone('');
     setEmail('');
+    setSenha('');
     setEditando(null);
   }
 
-  function handleEditar(cliente: Cliente) {
-    setNome(cliente.nome);
-    setTelefone(cliente.telefone);
-    setEmail(cliente.email);
-    setEditando(cliente.id);
-  }
-
-  function handleExcluir(id: string) {
-    Alert.alert('Excluir', 'Deseja realmente excluir este cliente?', [
-      {text: 'Cancelar', style: 'cancel'},
-      {
-        text: 'Excluir',
-        style: 'destructive',
-        onPress: async () => {
-          const novos = clientes.filter(c => c.id !== id);
-          await salvarClientes(novos);
-        },
-      },
-    ]);
-  }
-
   async function handleSalvar() {
-    if (!nome || !telefone || !email) {
+    if (!nome || !telefone || !email || !senha) {
       Alert.alert('Preencha todos os campos!');
       return;
     }
     if (editando) {
       const novos = clientes.map(c =>
-        c.id === editando ? {id: editando, nome, telefone, email} : c,
+        c.id === editando ? { id: editando, nome, telefone, email, senha } : c,
       );
       await salvarClientes(novos);
+      try {
+        await firestore().collection('clientes').doc(editando).update({ nome, telefone, email, senha });
+        Alert.alert('Cliente alterado com sucesso!');
+      } catch (e) {
+        Alert.alert('Erro ao atualizar no Firebase: ' + String(e));
+      }
     } else {
-      const novo: Cliente = {id: Date.now().toString(), nome, telefone, email};
+      const novo: Cliente = { id: Date.now().toString(), nome, telefone, email, senha };
       await salvarClientes([...clientes, novo]);
+      try {
+        const docRef = await firestore().collection('clientes').add({ nome, telefone, email, senha });
+        const atualizado = [...clientes, { id: docRef.id, nome, telefone, email, senha }];
+        await salvarClientes(atualizado);
+        Alert.alert('Cliente cadastrado com sucesso!');
+      } catch (e) {
+        Alert.alert('Erro ao cadastrar no Firebase: ' + String(e));
+      }
     }
     limparCampos();
+    carregarClientesFirestore();
   }
 
   return (
@@ -110,35 +121,27 @@ export default function ClienteScreen() {
         onChangeText={setEmail}
         keyboardType="email-address"
       />
+      <TextInput
+        style={styles.input}
+        placeholder="Senha"
+        value={senha}
+        onChangeText={setSenha}
+        secureTextEntry
+      />
       <Button
         title={editando ? 'Salvar Alteração' : 'Cadastrar'}
         onPress={handleSalvar}
       />
-      {editando && (
-        <Button title="Cancelar" color="gray" onPress={limparCampos} />
-      )}
       <Text style={styles.tituloLista}>Clientes Cadastrados</Text>
       <FlatList
         data={clientes}
         keyExtractor={item => item.id}
-        renderItem={({item}) => (
+        renderItem={({ item }) => (
           <View style={styles.item}>
             <Text style={styles.nome}>{item.nome}</Text>
             <Text>
               {item.telefone} | {item.email}
             </Text>
-            <View style={styles.botoes}>
-              <TouchableOpacity
-                onPress={() => handleEditar(item)}
-                style={styles.botaoEditar}>
-                <Text style={styles.textoBotao}>Editar</Text>
-              </TouchableOpacity>
-              <TouchableOpacity
-                onPress={() => handleExcluir(item.id)}
-                style={styles.botaoExcluir}>
-                <Text style={styles.textoBotao}>Excluir</Text>
-              </TouchableOpacity>
-            </View>
           </View>
         )}
       />
