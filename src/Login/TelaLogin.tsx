@@ -13,8 +13,7 @@ import {
 import firestore from '@react-native-firebase/firestore';
 import Cadastro from '../Cadastro/Cadastro';
 
-
-export default function TelaLogin({ navigation }: { navigation: any }) {
+function TelaLogin({ navigation }: { navigation: any }) {
     const [email, setEmail] = useState('');
     const [senha, setSenha] = useState('');
     const [modalVisible, setModalVisible] = useState(false);
@@ -53,8 +52,7 @@ export default function TelaLogin({ navigation }: { navigation: any }) {
 
             if (!clientesSnap.empty || (barbeirosSnap && !barbeirosSnap.empty)) {
                 Alert.alert('Login realizado com sucesso!');
-                // redireciona para a tela de serviços
-                navigation.navigate(''); //                               <-- ALTERE para a tela de 'Servicos' 
+                navigation.navigate('Servicos');
             } else {
                 Alert.alert('E-mail ou senha inválidos!');
             }
@@ -73,8 +71,6 @@ export default function TelaLogin({ navigation }: { navigation: any }) {
             return;
         }
 
-        // validação de senha forte
-        // pelo menos 8 caracteres, 1 letra maiúscula, 1 minúscula, 1 número e 1 caractere especial
         const senhaForte =
             /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
         if (!senhaForte.test(novaSenha)) {
@@ -85,13 +81,11 @@ export default function TelaLogin({ navigation }: { navigation: any }) {
         }
 
         try {
-            // tenta encontrar o usuário em clientes
             const clientesSnap = await firestore()
                 .collection('clientes')
                 .where('email', '==', emailRecuperar)
                 .get();
 
-            // se n encontrar em clientes, tenta em barbeiros
             const barbeirosSnap = clientesSnap.empty
                 ? await firestore()
                     .collection('barbeiros')
@@ -264,3 +258,4 @@ const styles = StyleSheet.create({
     },
 });
 
+export default TelaLogin;

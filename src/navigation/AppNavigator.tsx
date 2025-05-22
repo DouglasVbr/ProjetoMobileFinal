@@ -8,6 +8,7 @@ import {ProdutoScreen} from '../views/ProdutoScreen';
 import {AgendamentoScreen} from '../views/AgendamentoScreen';
 import {DashboardScreen} from '../views/DashboardScreen';
 import Cadastro from '../Cadastro/Cadastro';
+import TelaLogin from '../Login/TelaLogin';
 
 export type RootStackParamList = {
   Clientes: undefined;
@@ -17,7 +18,8 @@ export type RootStackParamList = {
   Agendamento: undefined;
   Dashboard: undefined;
   Cadastro: undefined;
-  //  rotas
+  TelaLogin: undefined
+  TelaTestes: undefined;
 };
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
@@ -72,7 +74,26 @@ export const AppNavigator = () => {
           component={Cadastro}
           options={{title: 'Cadastro'}}
         />
+ 
+        
+        <Stack.Screen
+          name="TelaLogin"
+          component={TelaLogin}
+          options={{title: 'TelaLogin'}}
+        />
+
+ 
+        
+        <Stack.Screen
+          name="TelaTestes"
+          component={TelaLogin}
+          options={{title: 'Testes'}}
+        />
+
+
+
       </Stack.Navigator>
     </NavigationContainer>
   );
+
 };
