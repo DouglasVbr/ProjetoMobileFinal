@@ -7,9 +7,25 @@ import {
   TouchableOpacity,
   Alert,
 } from 'react-native';
+<<<<<<< HEAD
 import { Calendar } from 'react-native-calendars';
 import firestore from '@react-native-firebase/firestore';
 import 'moment/locale/pt-br';
+=======
+import {FormInput} from '../components/FormInput';
+import {Button} from '../components/Button';
+import {Menu} from '../components/Menu';
+import {Agendamento, Cliente, Barbeiro, Servico} from '../models/types';
+import {AgendamentoStorage} from '../services/storage';
+import {ClienteStorage} from '../services/storage';
+import {BarbeiroStorage} from '../services/storage';
+import {ServicoStorage} from '../services/storage';
+import {SelectionModal} from '../components/SelectionModal';
+import {StatusManager} from '../components/StatusAgenda';
+import {StatusHistory} from '../components/FiltroAgendamento';
+import {AvaliacaoModal} from '../components/AvaliacaoModal';
+import {notificationService} from '../services/notifications';
+>>>>>>> ca30507d8a605df4b5f7ae2b50b16545fedd9acd
 
 interface Barbeiro {
   id: string;

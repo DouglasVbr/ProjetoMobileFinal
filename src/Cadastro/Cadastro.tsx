@@ -1,0 +1,256 @@
+import React, { useEffect, useState } from 'react';
+import {
+  View,
+  Text,
+  TextInput,
+  Button,
+  FlatList,
+  Alert,
+  TouchableOpacity,
+  Image,
+  StyleSheet,
+} from 'react-native';
+// @ts-ignore
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import firestore from '@react-native-firebase/firestore';
+import styles from '../styles/ClienteScreenStyles';
+
+interface Pessoa {
+  id: string;
+  nome: string;
+  telefone: string;
+  email: string;
+  senha: string;
+  tipo: 'cliente' | 'barbeiro';
+}
+
+export default function CadastroUnicoScreen() {
+  const [pessoas, setPessoas] = useState<Pessoa[]>([]);
+  const [nome, setNome] = useState('');
+  const [telefone, setTelefone] = useState('');
+  const [email, setEmail] = useState('');
+  const [senha, setSenha] = useState('');
+  const [tipo, setTipo] = useState<'cliente' | 'barbeiro'>('cliente');
+  const [editando, setEditando] = useState<string | null>(null);
+
+  useEffect(() => {
+    carregarPessoasFirestore();
+  }, []);
+
+  async function carregarPessoasFirestore() {
+    try {
+      const clientesSnap = await firestore().collection('clientes').get();
+      const barbeirosSnap = await firestore().collection('barbeiros').get();
+      const lista: Pessoa[] = [];
+
+      clientesSnap.forEach(doc => {
+        lista.push({ id: doc.id, ...doc.data(), tipo: 'cliente' } as Pessoa);
+      });
+      barbeirosSnap.forEach(doc => {
+        lista.push({ id: doc.id, ...doc.data(), tipo: 'barbeiro' } as Pessoa);
+      });
+
+      setPessoas(lista);
+      await AsyncStorage.setItem('pessoas', JSON.stringify(lista));
+    } catch (error) {
+      carregarPessoas();
+    }
+  }
+
+  async function carregarPessoas() {
+    const data = await AsyncStorage.getItem('pessoas');
+    if (data) {
+      setPessoas(JSON.parse(data));
+    }
+  }
+
+  async function salvarPessoas(novasPessoas: Pessoa[]) {
+    await AsyncStorage.setItem('pessoas', JSON.stringify(novasPessoas));
+    setPessoas(novasPessoas);
+  }
+
+  function limparCampos() {
+    setNome('');
+    setTelefone('');
+    setEmail('');
+    setSenha('');
+    setTipo('cliente');
+    setEditando(null);
+  }
+
+  function validarEmail(email: string) {
+    return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+  }
+
+  function validarSenha(senha: string) {
+    // Pelo menos 8 caracteres, 1 maiúscula, 1 minúscula, 1 número e 1 caractere especial (exceto [])
+    return /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^\w\s\[\]])[A-Za-z\d\W_]{8,}$/.test(senha);
+  }
+
+  async function handleSalvar() {
+    if (!nome || !telefone || !email || !senha) {
+      Alert.alert('Preencha todos os campos!');
+      return;
+    }
+    if (!validarEmail(email)) {
+      Alert.alert('Digite um e-mail válido!');
+      return;
+    }
+    if (!validarSenha(senha)) {
+      Alert.alert(
+        'A senha deve conter pelo menos 8 caracteres, incluindo uma letra maiúscula, uma minúscula, um número e um caractere especial (exceto colchetes []).'
+      );
+      return;
+    }
+    if (editando) {
+      const novos = pessoas.map(p =>
+        p.id === editando ? { id: editando, nome, telefone, email, senha, tipo } : p,
+      );
+      await salvarPessoas(novos);
+      try {
+        await firestore()
+          .collection(tipo === 'cliente' ? 'clientes' : 'barbeiros')
+          .doc(editando)
+          .update({ nome, telefone, email, senha });
+        Alert.alert('Cadastro alterado com sucesso!');
+      } catch (e) {
+        Alert.alert('Erro ao atualizar no Firebase: ' + String(e));
+      }
+    } else {
+      const novo: Pessoa = {
+        id: Date.now().toString(),
+        nome,
+        telefone,
+        email,
+        senha,
+        tipo,
+      };
+      await salvarPessoas([...pessoas, novo]);
+      try {
+        const docRef = await firestore()
+          .collection(tipo === 'cliente' ? 'clientes' : 'barbeiros')
+          .add({ nome, telefone, email, senha });
+        const atualizado = [
+          ...pessoas,
+          { id: docRef.id, nome, telefone, email, senha, tipo },
+        ];
+        await salvarPessoas(atualizado);
+        Alert.alert('Cadastro realizado com sucesso!');
+      } catch (e) {
+        Alert.alert('Erro ao cadastrar no Firebase: ' + String(e));
+      }
+    }
+    limparCampos();
+    carregarPessoasFirestore();
+  }
+
+  return (
+    <View style={styles.container}>
+      <Image
+        source={require('../components/img/LogoPrincipal.png')}
+        style={{ width: 120, height: 120, marginBottom: 20 }}
+        resizeMode="contain"
+      />
+      <Text style={styles.titulo}>Cadastro</Text>
+      <View style={estilos.tipoContainer}>
+        <TouchableOpacity
+          style={[
+            estilos.tipoBotao,
+            tipo === 'cliente' && estilos.tipoBotaoSelecionado,
+          ]}
+          onPress={() => setTipo('cliente')}
+        >
+          <Text style={[
+            estilos.tipoTexto,
+            tipo === 'cliente' && estilos.tipoTextoSelecionado,
+          ]}>Cliente</Text>
+        </TouchableOpacity>
+        <TouchableOpacity
+          style={[
+            estilos.tipoBotao,
+            tipo === 'barbeiro' && estilos.tipoBotaoSelecionado,
+          ]}
+          onPress={() => setTipo('barbeiro')}
+        >
+          <Text style={[
+            estilos.tipoTexto,
+            tipo === 'barbeiro' && estilos.tipoTextoSelecionado,
+          ]}>Barbeiro</Text>
+        </TouchableOpacity>
+      </View>
+      <TextInput
+        style={styles.input}
+        placeholder="Nome"
+        value={nome}
+        onChangeText={setNome}
+      />
+      <TextInput
+        style={styles.input}
+        placeholder="Telefone"
+        value={telefone}
+        onChangeText={setTelefone}
+        keyboardType="phone-pad"
+      />
+      <TextInput
+        style={styles.input}
+        placeholder="E-mail"
+        value={email}
+        onChangeText={setEmail}
+        keyboardType="email-address"
+        autoCapitalize="none"
+      />
+      <TextInput
+        style={styles.input}
+        placeholder="Senha"
+        value={senha}
+        onChangeText={setSenha}
+        secureTextEntry
+      />
+      <Button
+        title={editando ? 'Salvar Alteração' : 'Cadastrar'}
+        onPress={handleSalvar}
+      />
+      <Text style={styles.tituloLista}>Cadastrados</Text>
+      <FlatList
+        data={pessoas}
+        keyExtractor={item => item.id}
+        renderItem={({ item }) => (
+          <View style={styles.item}>
+            <Text style={styles.nome}>{item.nome} ({item.tipo})</Text>
+            <Text>
+              {item.telefone} | {item.email}
+            </Text>
+          </View>
+        )}
+      />
+    </View>
+  );
+}
+
+const estilos = StyleSheet.create({
+  tipoContainer: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    marginBottom: 20,
+  },
+  tipoBotao: {
+    paddingVertical: 10,
+    paddingHorizontal: 25,
+    borderWidth: 1,
+    borderColor: '#222',
+    borderRadius: 8,
+    marginHorizontal: 10,
+    backgroundColor: '#fff',
+  },
+  tipoBotaoSelecionado: {
+    backgroundColor: '#222',
+  },
+  tipoTexto: {
+    color: '#222',
+    fontWeight: 'bold',
+    fontSize: 16,
+  },
+  tipoTextoSelecionado: {
+    color: '#fff',
+  },
+});
