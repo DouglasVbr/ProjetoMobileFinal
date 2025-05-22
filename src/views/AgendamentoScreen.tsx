@@ -1,14 +1,17 @@
-import React, {useState, useEffect} from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
-  ScrollView,
-  Alert,
   Text,
-  TouchableOpacity,
   StyleSheet,
-  ActivityIndicator,
-  TextInput,
+  ScrollView,
+  TouchableOpacity,
+  Alert,
 } from 'react-native';
+<<<<<<< HEAD
+import { Calendar } from 'react-native-calendars';
+import firestore from '@react-native-firebase/firestore';
+import 'moment/locale/pt-br';
+=======
 import {FormInput} from '../components/FormInput';
 import {Button} from '../components/Button';
 import {Menu} from '../components/Menu';
@@ -22,447 +25,226 @@ import {StatusManager} from '../components/StatusAgenda';
 import {StatusHistory} from '../components/FiltroAgendamento';
 import {AvaliacaoModal} from '../components/AvaliacaoModal';
 import {notificationService} from '../services/notifications';
+>>>>>>> ca30507d8a605df4b5f7ae2b50b16545fedd9acd
 
-export const AgendamentoScreen: React.FC = () => {
-  const [loading, setLoading] = useState(true);
-  const [agendamentos, setAgendamentos] = useState<Agendamento[]>([]);
-  const [clientes, setClientes] = useState<Cliente[]>([]);
+interface Barbeiro {
+  id: string;
+  nome: string;
+  telefone: string;
+  disponibilidade: {
+    [key: string]: string[]; // data: horários disponíveis
+  };
+}
+
+interface Agendamento {
+  id?: string;
+  clienteId: string;
+  clienteNome: string;
+  barbeiroId: string;
+  barbeiroNome: string;
+  barbeiroTelefone: string;
+  data: string;
+  horario: string;
+  status: 'pendente' | 'confirmado' | 'cancelado';
+}
+
+export const AgendamentoScreen = () => {
+  const [selectedDate, setSelectedDate] = useState<Date | null>(null);
   const [barbeiros, setBarbeiros] = useState<Barbeiro[]>([]);
-  const [servicos, setServicos] = useState<Servico[]>([]);
-  const [selectedCliente, setSelectedCliente] = useState<Cliente | null>(null);
-  const [selectedBarbeiro, setSelectedBarbeiro] = useState<Barbeiro | null>(
-    null,
-  );
-  const [selectedServico, setSelectedServico] = useState<Servico | null>(null);
-  const [data, setData] = useState('');
-  const [hora, setHora] = useState('');
-  const [observacoes, setObservacoes] = useState('');
-  const [showClienteModal, setShowClienteModal] = useState(false);
-  const [showBarbeiroModal, setShowBarbeiroModal] = useState(false);
-  const [showServicoModal, setShowServicoModal] = useState(false);
-  const [showStatusManager, setShowStatusManager] = useState(false);
-  const [showAvaliacaoModal, setShowAvaliacaoModal] = useState(false);
-  const [selectedAgendamento, setSelectedAgendamento] =
-    useState<Agendamento | null>(null);
+  const [horariosDisponiveis, setHorariosDisponiveis] = useState<string[]>([]);
+  const [barbeiroSelecionado, setBarbeiroSelecionado] = useState<Barbeiro | null>(null);
+  const [horarioSelecionado, setHorarioSelecionado] = useState<string>('');
 
   useEffect(() => {
-    carregarDados();
+    carregarBarbeiros();
   }, []);
 
-  const carregarDados = async () => {
+  const carregarBarbeiros = async () => {
     try {
-      setLoading(true);
-      const [agendamentosData, clientesData, barbeirosData, servicosData] =
-        await Promise.all([
-          AgendamentoStorage.getAll(),
-          ClienteStorage.getAll(),
-          BarbeiroStorage.getAll(),
-          ServicoStorage.getAll(),
-        ]);
-
-      setAgendamentos(agendamentosData);
-      setClientes(clientesData);
-      setBarbeiros(barbeirosData);
-      setServicos(servicosData);
+      const snapshot = await firestore().collection('barbeiros').get();
+      const listaBarbeiros: Barbeiro[] = [];
+      snapshot.forEach(doc => {
+        listaBarbeiros.push({ id: doc.id, ...doc.data() } as Barbeiro);
+      });
+      setBarbeiros(listaBarbeiros);
     } catch (error) {
-      console.error('Erro ao carregar dados:', error);
-      Alert.alert('Erro', 'Erro ao carregar dados');
-    } finally {
-      setLoading(false);
+      Alert.alert('Erro ao carregar barbeiros');
     }
   };
 
-  const validateForm = () => {
-    if (!selectedCliente) {
-      Alert.alert('Erro', 'Selecione um cliente');
-      return false;
-    }
-    if (!selectedBarbeiro) {
-      Alert.alert('Erro', 'Selecione um barbeiro');
-      return false;
-    }
-    if (!selectedServico) {
-      Alert.alert('Erro', 'Selecione um serviço');
-      return false;
-    }
-    if (!data) {
-      Alert.alert('Erro', 'Selecione uma data');
-      return false;
-    }
-    return true;
-  };
-
-  const handleSubmit = async () => {
-    if (validateForm()) {
-      try {
-        const dataHora = new Date(`${data}T${hora}`).toISOString();
-        const novoAgendamento: Agendamento = {
-          id: Date.now().toString(),
-          clienteId: selectedCliente?.id || '',
-          clienteNome: selectedCliente?.nome || '',
-          barbeiroId: selectedBarbeiro?.id || '',
-          barbeiroNome: selectedBarbeiro?.nome || '',
-          servicoId: selectedServico?.id || '',
-          servicoNome: selectedServico?.nome || '',
-          data: dataHora,
-          status: 'agendado',
-          observacoes: observacoes,
-          historicoStatus: [
-            {
-              status: 'agendado',
-              data: new Date().toISOString(),
-              observacao: 'Agendamento criado',
-            },
-          ],
-        };
-
-        await AgendamentoStorage.save(novoAgendamento);
-        notificationService.notificarNovoAgendamento(novoAgendamento);
-        notificationService.agendarNotificacao(novoAgendamento);
-
-        setSelectedCliente(null);
-        setSelectedBarbeiro(null);
-        setSelectedServico(null);
-        setData('');
-        setHora('');
-        setObservacoes('');
-        carregarDados();
-        Alert.alert('Sucesso', 'Agendamento criado com sucesso!');
-      } catch (error) {
-        console.error('Erro ao salvar agendamento:', error);
-        Alert.alert('Erro', 'Erro ao criar agendamento');
-      }
+  const verificarHorariosDisponiveis = (data: Date, barbeiroId: string) => {
+    const barbeiro = barbeiros.find(b => b.id === barbeiroId);
+    if (barbeiro) {
+      const dataFormatada = data.toISOString().split('T')[0];
+      const horarios = barbeiro.disponibilidade[dataFormatada] || [];
+      setHorariosDisponiveis(horarios);
     }
   };
 
-  const handleStatusChange = async (
-    agendamento: Agendamento,
-    novoStatus: Agendamento['status'],
-  ) => {
-    try {
-      const agendamentoAtualizado: Agendamento = {
-        ...agendamento,
-        status: novoStatus,
-        historicoStatus: [
-          ...agendamento.historicoStatus,
-          {
-            status: novoStatus,
-            data: new Date().toISOString(),
-            observacao: `Status alterado para ${novoStatus}`,
-          },
-        ],
-      };
-
-      await AgendamentoStorage.update(agendamentoAtualizado);
-      notificationService.notificarAlteracaoStatus(agendamento, novoStatus);
-      carregarDados();
-    } catch (error) {
-      console.error('Erro ao atualizar status:', error);
-      Alert.alert('Erro', 'Erro ao atualizar status do agendamento');
-    }
-  };
-
-  const handleDelete = async (id: string) => {
-    Alert.alert(
-      'Confirmar exclusão',
-      'Tem certeza que deseja excluir este agendamento?',
-      [
-        {
-          text: 'Cancelar',
-          style: 'cancel',
-        },
-        {
-          text: 'Excluir',
-          style: 'destructive',
-          onPress: async () => {
-            try {
-              await AgendamentoStorage.delete(id);
-              notificationService.cancelarNotificacao(id);
-              carregarDados();
-              Alert.alert('Sucesso', 'Agendamento excluído com sucesso!');
-            } catch (error) {
-              console.error('Erro ao excluir agendamento:', error);
-              Alert.alert('Erro', 'Erro ao excluir agendamento');
-            }
-          },
-        },
-      ],
-    );
-  };
-
-  const handleAvaliacao = async (nota: number, comentario: string) => {
-    if (!selectedAgendamento) {
+  const realizarAgendamento = async () => {
+    if (!selectedDate || !barbeiroSelecionado || !horarioSelecionado) {
+      Alert.alert('Preencha todos os campos');
       return;
     }
 
     try {
-      const agendamentoAtualizado = {
-        ...selectedAgendamento,
-        avaliacao: {
-          nota,
-          comentario,
-          data: new Date().toISOString(),
-        },
+      const novoAgendamento: Agendamento = {
+        clienteId: 'ID_DO_CLIENTE_LOGADO', 
+        clienteNome: 'NOME_DO_CLIENTE', 
+        barbeiroId: barbeiroSelecionado.id,
+        barbeiroNome: barbeiroSelecionado.nome,
+        barbeiroTelefone: barbeiroSelecionado.telefone,
+        data: selectedDate.toISOString().split('T')[0],
+        horario: horarioSelecionado,
+        status: 'pendente'
       };
 
-      await AgendamentoStorage.update(agendamentoAtualizado);
-      carregarDados();
-      setShowAvaliacaoModal(false);
+      await firestore().collection('agendamentos').add(novoAgendamento);
+      Alert.alert('Agendamento realizado com sucesso!');
     } catch (error) {
-      console.error('Erro ao registrar avaliação:', error);
-      Alert.alert('Erro', 'Erro ao registrar avaliação');
+      Alert.alert('Erro ao realizar agendamento');
     }
   };
 
-  if (loading) {
-    return (
-      <View style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color="#2196F3" />
-      </View>
-    );
-  }
-
   return (
-    <View style={styles.container}>
-      <Menu />
-      <ScrollView style={styles.scrollView}>
-        <View style={styles.formContainer}>
-          <TouchableOpacity
-            style={styles.selectionButton}
-            onPress={() => setShowClienteModal(true)}>
-            <Text style={styles.selectionButtonText}>
-              {selectedCliente ? selectedCliente.nome : 'Selecione um cliente'}
-            </Text>
-          </TouchableOpacity>
+    <ScrollView style={styles.container}>
+      <Text style={styles.titulo}>Agendar Horário</Text>
 
-          <TouchableOpacity
-            style={styles.selectionButton}
-            onPress={() => setShowBarbeiroModal(true)}>
-            <Text style={styles.selectionButtonText}>
-              {selectedBarbeiro
-                ? selectedBarbeiro.nome
-                : 'Selecione um barbeiro'}
-            </Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity
-            style={styles.selectionButton}
-            onPress={() => setShowServicoModal(true)}>
-            <Text style={styles.selectionButtonText}>
-              {selectedServico ? selectedServico.nome : 'Selecione um serviço'}
-            </Text>
-          </TouchableOpacity>
-
-          <TextInput
-            style={styles.input}
-            placeholder="Data (DD/MM/AAAA)"
-            value={data}
-            onChangeText={setData}
-          />
-
-          <TextInput
-            style={styles.input}
-            placeholder="Hora (HH:MM)"
-            value={hora}
-            onChangeText={setHora}
-          />
-
-          <FormInput
-            label="Observações"
-            value={observacoes}
-            onChangeText={setObservacoes}
-            multiline
-          />
-
-          <Button title="Agendar" onPress={handleSubmit} />
-        </View>
-
-        <View style={styles.listContainer}>
-          <Text style={styles.listTitle}>Agendamentos</Text>
-          {agendamentos.map(agendamento => (
-            <View key={agendamento.id} style={styles.agendamentoItem}>
-              <View style={styles.agendamentoInfo}>
-                <Text style={styles.agendamentoTitle}>
-                  {agendamento.clienteNome}
-                </Text>
-                <Text style={styles.agendamentoSubtitle}>
-                  {agendamento.barbeiroNome} - {agendamento.servicoNome}
-                </Text>
-                <Text style={styles.agendamentoDate}>
-                  {new Date(agendamento.data).toLocaleString()}
-                </Text>
-                <Text style={styles.agendamentoStatus}>
-                  Status: {agendamento.status}
-                </Text>
-              </View>
-              <View style={styles.agendamentoActions}>
-                <TouchableOpacity
-                  style={styles.actionButton}
-                  onPress={() => {
-                    setSelectedAgendamento(agendamento);
-                    setShowStatusManager(true);
-                  }}>
-                  <Text style={styles.actionButtonText}>Status</Text>
-                </TouchableOpacity>
-                <TouchableOpacity
-                  style={[styles.actionButton, styles.deleteButton]}
-                  onPress={() => handleDelete(agendamento.id)}>
-                  <Text style={styles.actionButtonText}>Excluir</Text>
-                </TouchableOpacity>
-              </View>
-            </View>
-          ))}
-        </View>
-      </ScrollView>
-
-      <SelectionModal
-        visible={showClienteModal}
-        title="Selecione um Cliente"
-        items={clientes}
-        onSelect={item => {
-          setSelectedCliente(item as Cliente);
-          setShowClienteModal(false);
-        }}
-        onClose={() => setShowClienteModal(false)}
-      />
-
-      <SelectionModal
-        visible={showBarbeiroModal}
-        title="Selecione um Barbeiro"
-        items={barbeiros}
-        onSelect={item => {
-          setSelectedBarbeiro(item as Barbeiro);
-          setShowBarbeiroModal(false);
-        }}
-        onClose={() => setShowBarbeiroModal(false)}
-      />
-
-      <SelectionModal
-        visible={showServicoModal}
-        title="Selecione um Serviço"
-        items={servicos}
-        onSelect={item => {
-          setSelectedServico(item as Servico);
-          setShowServicoModal(false);
-        }}
-        onClose={() => setShowServicoModal(false)}
-      />
-
-      {selectedAgendamento && (
-        <>
-          <StatusManager
-            visible={showStatusManager}
-            onClose={() => setShowStatusManager(false)}
-            agendamento={selectedAgendamento}
-            onStatusChange={(novoStatus, _observacao) =>
-              handleStatusChange(selectedAgendamento, novoStatus)
+      <View style={styles.calendarioContainer}>
+        <Calendar
+          onDayPress={(day: { dateString: string }) => {
+            const date = new Date(day.dateString);
+            setSelectedDate(date);
+            if (barbeiroSelecionado) {
+              verificarHorariosDisponiveis(date, barbeiroSelecionado.id);
             }
-          />
+          }}
+          minDate={new Date().toISOString().split('T')[0]}
+          theme={{
+            selectedDayBackgroundColor: '#007AFF',
+            selectedDayTextColor: '#FFFFFF',
+          }}
+        />
+      </View>
 
-          <StatusHistory
-            visible={showStatusManager}
-            historico={selectedAgendamento.historicoStatus}
-            onClose={() => setShowStatusManager(false)}
-          />
+      <View style={styles.barbeirosContainer}>
+        <Text style={styles.subtitulo}>Barbeiros Disponíveis:</Text>
+        {barbeiros.map(barbeiro => (
+          <TouchableOpacity
+            key={barbeiro.id}
+            style={[
+              styles.barbeiroItem,
+              barbeiroSelecionado?.id === barbeiro.id && styles.barbeiroSelecionado
+            ]}
+            onPress={() => {
+              setBarbeiroSelecionado(barbeiro);
+              if (selectedDate) {
+                verificarHorariosDisponiveis(selectedDate, barbeiro.id);
+              }
+            }}>
+            <Text style={styles.barbeiroNome}>{barbeiro.nome}</Text>
+            <Text style={styles.barbeiroTelefone}>Tel: {barbeiro.telefone}</Text>
+          </TouchableOpacity>
+        ))}
+      </View>
 
-          <AvaliacaoModal
-            visible={showAvaliacaoModal}
-            onClose={() => setShowAvaliacaoModal(false)}
-            onSave={handleAvaliacao}
-          />
-        </>
+      {horariosDisponiveis.length > 0 && (
+        <View style={styles.horariosContainer}>
+          <Text style={styles.subtitulo}>Horários Disponíveis:</Text>
+          <ScrollView horizontal>
+            {horariosDisponiveis.map(horario => (
+              <TouchableOpacity
+                key={horario}
+                style={[
+                  styles.horarioItem,
+                  horarioSelecionado === horario && styles.horarioSelecionado
+                ]}
+                onPress={() => setHorarioSelecionado(horario)}>
+                <Text style={styles.horarioTexto}>{horario}</Text>
+              </TouchableOpacity>
+            ))}
+          </ScrollView>
+        </View>
       )}
-    </View>
+
+      <TouchableOpacity
+        style={styles.botaoAgendar}
+        onPress={realizarAgendamento}>
+        <Text style={styles.botaoTexto}>Confirmar Agendamento</Text>
+      </TouchableOpacity>
+    </ScrollView>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    padding: 16,
     backgroundColor: '#f5f5f5',
   },
-  loadingContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  scrollView: {
-    flex: 1,
-  },
-  formContainer: {
-    padding: 20,
-  },
-  selectionButton: {
-    backgroundColor: '#fff',
-    padding: 15,
-    borderRadius: 5,
-    marginBottom: 10,
-    borderWidth: 1,
-    borderColor: '#ddd',
-  },
-  selectionButtonText: {
-    color: '#333',
-    fontSize: 16,
-  },
-  listContainer: {
-    padding: 20,
-  },
-  listTitle: {
-    fontSize: 20,
+  titulo: {
+    fontSize: 24,
     fontWeight: 'bold',
-    marginBottom: 15,
+    marginBottom: 16,
+    textAlign: 'center',
   },
-  agendamentoItem: {
-    backgroundColor: '#fff',
-    padding: 15,
-    borderRadius: 5,
-    marginBottom: 10,
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-  },
-  agendamentoInfo: {
-    flex: 1,
-  },
-  agendamentoTitle: {
-    fontSize: 16,
+  subtitulo: {
+    fontSize: 18,
     fontWeight: 'bold',
+    marginVertical: 8,
   },
-  agendamentoSubtitle: {
-    fontSize: 14,
-    color: '#666',
-  },
-  agendamentoDate: {
-    fontSize: 14,
-    color: '#666',
-  },
-  agendamentoStatus: {
-    fontSize: 14,
-    color: '#2196F3',
-    marginTop: 5,
-  },
-  agendamentoActions: {
-    flexDirection: 'row',
-  },
-  actionButton: {
-    backgroundColor: '#2196F3',
+  calendarioContainer: {
+    backgroundColor: '#fff',
+    borderRadius: 8,
     padding: 8,
-    borderRadius: 5,
-    marginLeft: 10,
+    marginBottom: 16,
   },
-  deleteButton: {
-    backgroundColor: '#f44336',
+  barbeirosContainer: {
+    marginBottom: 16,
   },
-  actionButtonText: {
-    color: '#fff',
-    fontSize: 12,
+  barbeiroItem: {
+    backgroundColor: '#fff',
+    padding: 12,
+    borderRadius: 8,
+    marginBottom: 8,
   },
-  input: {
+  barbeiroSelecionado: {
+    backgroundColor: '#e3f2fd',
+    borderColor: '#007AFF',
     borderWidth: 1,
-    borderColor: '#ddd',
-    borderRadius: 5,
-    padding: 15,
-    marginBottom: 10,
+  },
+  barbeiroNome: {
     fontSize: 16,
+    fontWeight: 'bold',
+  },
+  barbeiroTelefone: {
+    fontSize: 14,
+    color: '#666',
+  },
+  horariosContainer: {
+    marginBottom: 16,
+  },
+  horarioItem: {
+    backgroundColor: '#fff',
+    padding: 12,
+    borderRadius: 8,
+    marginRight: 8,
+  },
+  horarioSelecionado: {
+    backgroundColor: '#007AFF',
+  },
+  horarioTexto: {
+    fontSize: 16,
+  },
+  botaoAgendar: {
+    backgroundColor: '#007AFF',
+    padding: 16,
+    borderRadius: 8,
+    alignItems: 'center',
+  },
+  botaoTexto: {
+    color: '#fff',
+    fontSize: 18,
+    fontWeight: 'bold',
   },
 });
