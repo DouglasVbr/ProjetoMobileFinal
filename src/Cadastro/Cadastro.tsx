@@ -24,7 +24,7 @@ interface Pessoa {
   tipo: 'cliente' | 'barbeiro';
 }
 
-export default function CadastroUnicoScreen() {
+function Cadastro({ navigation }: { navigation: any }) {
   const [pessoas, setPessoas] = useState<Pessoa[]>([]);
   const [nome, setNome] = useState('');
   const [telefone, setTelefone] = useState('');
@@ -102,6 +102,33 @@ export default function CadastroUnicoScreen() {
       );
       return;
     }
+
+    // Validação para não permitir e-mail repetido
+    try {
+      const emailExisteCliente = await firestore()
+        .collection('clientes')
+        .where('email', '==', email)
+        .get();
+      const emailExisteBarbeiro = await firestore()
+        .collection('barbeiros')
+        .where('email', '==', email)
+        .get();
+
+      if (
+        (!editando && (!emailExisteCliente.empty || !emailExisteBarbeiro.empty)) ||
+        (editando &&
+          pessoas.some(
+            p => p.email === email && p.id !== editando
+          ))
+      ) {
+        Alert.alert('Este e-mail já está cadastrado!');
+        return;
+      }
+    } catch (e) {
+      Alert.alert('Erro ao verificar e-mail: ' + String(e));
+      return;
+    }
+
     if (editando) {
       const novos = pessoas.map(p =>
         p.id === editando ? { id: editando, nome, telefone, email, senha, tipo } : p,
@@ -136,6 +163,8 @@ export default function CadastroUnicoScreen() {
         ];
         await salvarPessoas(atualizado);
         Alert.alert('Cadastro realizado com sucesso!');
+        // Redireciona para a tela de login após cadastro bem-sucedido
+        navigation.navigate('Login'); //    
       } catch (e) {
         Alert.alert('Erro ao cadastrar no Firebase: ' + String(e));
       }
@@ -254,3 +283,5 @@ const estilos = StyleSheet.create({
     color: '#fff',
   },
 });
+
+export default Cadastro;

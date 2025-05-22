@@ -11,8 +11,10 @@ import {
     Image,
 } from 'react-native';
 import firestore from '@react-native-firebase/firestore';
+import Cadastro from '../Cadastro/Cadastro';
 
-export default function TelaLogin({ navigation }) {
+
+export default function TelaLogin({ navigation }: { navigation: any }) {
     const [email, setEmail] = useState('');
     const [senha, setSenha] = useState('');
     const [modalVisible, setModalVisible] = useState(false);
@@ -33,7 +35,7 @@ export default function TelaLogin({ navigation }) {
             return;
         }
         try {
-            // Procura em clientes
+            // procura em clientes
             const clientesSnap = await firestore()
                 .collection('clientes')
                 .where('email', '==', email)
@@ -51,7 +53,8 @@ export default function TelaLogin({ navigation }) {
 
             if (!clientesSnap.empty || (barbeirosSnap && !barbeirosSnap.empty)) {
                 Alert.alert('Login realizado com sucesso!');
-                // navigation.navigate('Home');
+                // redireciona para a tela de serviços
+                navigation.navigate(''); //                               <-- ALTERE para a tela de 'Servicos' 
             } else {
                 Alert.alert('E-mail ou senha inválidos!');
             }
@@ -158,7 +161,7 @@ export default function TelaLogin({ navigation }) {
 
             <TouchableOpacity
                 style={styles.link}
-                onPress={() => navigation.navigate('CadastroCliente')}
+                onPress={() => navigation.navigate('Cadastro')}
             >
                 <Text style={styles.linkText}>Não tem conta? Cadastre-se</Text>
             </TouchableOpacity>
@@ -260,3 +263,4 @@ const styles = StyleSheet.create({
         color: '#222',
     },
 });
+

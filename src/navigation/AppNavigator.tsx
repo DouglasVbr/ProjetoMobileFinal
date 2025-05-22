@@ -7,6 +7,7 @@ import {BarbeiroScreen} from '../components/LoginBarbeiro';
 import {ProdutoScreen} from '../views/ProdutoScreen';
 import {AgendamentoScreen} from '../views/AgendamentoScreen';
 import {DashboardScreen} from '../views/DashboardScreen';
+import Cadastro from '../Cadastro/Cadastro';
 
 export type RootStackParamList = {
   Clientes: undefined;
@@ -15,6 +16,7 @@ export type RootStackParamList = {
   Produtos: undefined;
   Agendamento: undefined;
   Dashboard: undefined;
+  Cadastro: undefined;
   //  rotas
 };
 
@@ -63,6 +65,12 @@ export const AppNavigator = () => {
           name="Agendamento"
           component={AgendamentoScreen}
           options={{title: 'Agendamentos'}}
+        />
+        
+        <Stack.Screen
+          name="Cadastro"
+          component={Cadastro}
+          options={{title: 'Cadastro'}}
         />
       </Stack.Navigator>
     </NavigationContainer>
