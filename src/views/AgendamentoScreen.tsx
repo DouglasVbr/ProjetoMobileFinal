@@ -18,8 +18,8 @@ import {ClienteStorage} from '../services/storage';
 import {BarbeiroStorage} from '../services/storage';
 import {ServicoStorage} from '../services/storage';
 import {SelectionModal} from '../components/SelectionModal';
-import {StatusManager} from '../components/StatusManager';
-import {StatusHistory} from '../components/StatusHistory';
+import {StatusManager} from '../components/StatusAgenda';
+import {StatusHistory} from '../components/FiltroAgendamento';
 import {AvaliacaoModal} from '../components/AvaliacaoModal';
 import {notificationService} from '../services/notifications';
 

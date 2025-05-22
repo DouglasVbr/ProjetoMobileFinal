@@ -1,15 +1,21 @@
-/* eslint-disable react-native/no-inline-styles */
 import React, {useState, useEffect} from 'react';
 import {View, ScrollView, Alert, FlatList, Text, Switch} from 'react-native';
-import {FormInput} from '../components/FormInput';
-import {Button} from '../components/Button';
-import {Menu} from '../components/Menu';
+import {FormInput} from './FormInput';
+import {Button} from './Button';
+import {Menu} from './Menu';
 import {globalStyles} from '../styles/globalStyles';
-import {Barbeiro} from '../models/types';
-import {BarbeiroStorage} from '../services/storage';
+import firestore from '@react-native-firebase/firestore';
+
+interface Barbeiro {
+  id: string;
+  nome: string;
+  especialidade: string;
+  disponibilidade: boolean;
+  servicos: string[];
+}
 
 export const BarbeiroScreen: React.FC = () => {
-  const [barbeiro, setBarbeiro] = useState<Partial<Barbeiro>>({
+  const [barbeiro, setBarbeiro] = useState<Omit<Barbeiro, 'id'>>({
     nome: '',
     especialidade: '',
     disponibilidade: true,
@@ -22,13 +28,17 @@ export const BarbeiroScreen: React.FC = () => {
   );
 
   useEffect(() => {
-    carregarBarbeiros();
+    carregarBarbeirosFirestore();
   }, []);
 
-  const carregarBarbeiros = async () => {
+  const carregarBarbeirosFirestore = async () => {
     try {
-      const dados = await BarbeiroStorage.getAll();
-      setBarbeiros(dados);
+      const snapshot = await firestore().collection('barbeiros').get();
+      const lista: Barbeiro[] = [];
+      snapshot.forEach(doc => {
+        lista.push({ id: doc.id, ...doc.data() } as Barbeiro);
+      });
+      setBarbeiros(lista);
     } catch (error) {
       Alert.alert('Erro', 'Não foi possível carregar os barbeiros.');
     }
@@ -56,7 +66,7 @@ export const BarbeiroScreen: React.FC = () => {
 
     setLoading(true);
     try {
-      await BarbeiroStorage.save(barbeiro as Barbeiro);
+      await firestore().collection('barbeiros').add(barbeiro);
       Alert.alert('Sucesso', 'Barbeiro cadastrado com sucesso!');
       setBarbeiro({
         nome: '',
@@ -64,35 +74,12 @@ export const BarbeiroScreen: React.FC = () => {
         disponibilidade: true,
         servicos: [],
       });
-      carregarBarbeiros();
+      carregarBarbeirosFirestore();
     } catch (error) {
       Alert.alert('Erro', 'Não foi possível cadastrar o barbeiro.');
     } finally {
       setLoading(false);
     }
-  };
-
-  const handleDelete = async (id: string) => {
-    Alert.alert(
-      'Confirmar exclusão',
-      'Tem certeza que deseja excluir este barbeiro?',
-      [
-        {text: 'Cancelar', style: 'cancel'},
-        {
-          text: 'Excluir',
-          style: 'destructive',
-          onPress: async () => {
-            try {
-              await BarbeiroStorage.delete(id);
-              carregarBarbeiros();
-              Alert.alert('Sucesso', 'Barbeiro excluído com sucesso!');
-            } catch (error) {
-              Alert.alert('Erro', 'Não foi possível excluir o barbeiro.');
-            }
-          },
-        },
-      ],
-    );
   };
 
   const renderBarbeiro = ({item}: {item: Barbeiro}) => (
@@ -102,14 +89,6 @@ export const BarbeiroScreen: React.FC = () => {
       <Text>
         Status: {item.disponibilidade ? 'Disponível' : 'Indisponível'}
       </Text>
-      <View style={[globalStyles.row, {marginTop: 10}]}>
-        <Button
-          title="Excluir"
-          onPress={() => handleDelete(item.id)}
-          variant="danger"
-          style={{flex: 1, marginRight: 5}}
-        />
-      </View>
     </View>
   );
 

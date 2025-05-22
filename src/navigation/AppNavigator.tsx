@@ -3,7 +3,7 @@ import {NavigationContainer} from '@react-navigation/native';
 import {createNativeStackNavigator} from '@react-navigation/native-stack';
 import {ClienteScreen} from '../views/ClienteScreen';
 import {ServicoScreen} from '../views/ServicoScreen';
-import {BarbeiroScreen} from '../views/BarbeiroScreen';
+import {BarbeiroScreen} from '../components/LoginBarbeiro';
 import {ProdutoScreen} from '../views/ProdutoScreen';
 import {AgendamentoScreen} from '../views/AgendamentoScreen';
 import {DashboardScreen} from '../views/DashboardScreen';
