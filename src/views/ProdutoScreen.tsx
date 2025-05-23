@@ -1,5 +1,3 @@
-/* eslint-disable radix */
-/* eslint-disable react-native/no-inline-styles */
 import React, {useState, useEffect} from 'react';
 import {View, ScrollView, Alert, FlatList, Text} from 'react-native';
 import {FormInput} from '../components/FormInput';

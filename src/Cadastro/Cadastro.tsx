@@ -176,7 +176,7 @@ function Cadastro({ navigation }: { navigation: any }) {
   return (
     <View style={styles.container}>
       <Image
-        source={require('../components/img/LogoPrincipal.png')}
+        source={require('../img/LogoPrincipal.png')}
         style={{ width: 120, height: 120, marginBottom: 20 }}
         resizeMode="contain"
       />

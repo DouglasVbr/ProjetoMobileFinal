@@ -1,6 +1,60 @@
 import {StyleSheet} from 'react-native';
 
 export const globalStyles = StyleSheet.create({
+
+  modalContainer: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  modalContent: {
+    backgroundColor: '#fff',
+    borderRadius: 10,
+    padding: 20,
+    width: '90%',
+    maxHeight: '80%',
+  },
+  modalTitle: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    marginBottom: 15,
+    textAlign: 'center',
+  },
+  historyItem: {
+    padding: 15,
+    borderBottomWidth: 1,
+    borderBottomColor: '#eee',
+  },
+  statusText: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: '#2196F3',
+  },
+  dateText: {
+    fontSize: 14,
+    color: '#666',
+    marginTop: 5,
+  },
+  observacaoText: {
+    fontSize: 14,
+    color: '#666',
+    marginTop: 5,
+    fontStyle: 'italic',
+  },
+  closeButton: {
+    backgroundColor: '#2196F3',
+    padding: 15,
+    borderRadius: 5,
+    marginTop: 15,
+  },
+  closeButtonText: {
+    color: '#fff',
+    textAlign: 'center',
+    fontSize: 16,
+    fontWeight: 'bold',
+  },
+
   container: {
     flex: 1,
     padding: 20,
@@ -66,4 +120,5 @@ export const globalStyles = StyleSheet.create({
     color: '#666',
     marginBottom: 8,
   },
+  
 });

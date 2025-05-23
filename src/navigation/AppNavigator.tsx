@@ -43,9 +43,17 @@ export const AppNavigator = () => {
         />
         <Stack.Screen
           name="Clientes"
-          component={ClienteScreen}
           options={{title: 'Clientes'}}
-        />
+        >
+          {props => (
+            <ClienteScreen
+              {...props}
+              onLogout={() => {
+                
+              }}
+            />
+          )}
+        </Stack.Screen>
         <Stack.Screen
           name="Servicos"
           component={ServicoScreen}

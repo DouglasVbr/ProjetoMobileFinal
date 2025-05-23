@@ -8,7 +8,11 @@ import {globalStyles} from '../styles/globalStyles';
 import {Cliente} from '../models/types';
 import {ClienteStorage} from '../services/storage';
 
-export const ClienteScreen: React.FC = () => {
+type ClienteScreenProps = {
+  onLogout: () => void | Promise<void>;
+};
+
+export function ClienteScreen({ onLogout }: ClienteScreenProps) {
   const [cliente, setCliente] = useState<Partial<Cliente>>({
     nome: '',
     telefone: '',

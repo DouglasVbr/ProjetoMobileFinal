@@ -1,7 +1,7 @@
 import React, {useState, useEffect} from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import LoginScreen from './screens/LoginScreen';
-import ClienteScreen from './screens/ClienteScreen';
+import { ClienteScreen } from './views/ClienteScreen';
 
 export default function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
