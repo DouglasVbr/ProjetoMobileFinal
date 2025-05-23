@@ -1,14 +1,15 @@
 import React from 'react';
-import { NavigationContainer } from '@react-navigation/native';
-import { createNativeStackNavigator } from '@react-navigation/native-stack';
-import { ClienteScreen } from '../views/ClienteScreen';
-import { ServicoScreen } from '../views/ServicoScreen';
-import { BarbeiroScreen } from '../components/LoginBarbeiro';
-import { ProdutoScreen } from '../views/ProdutoScreen';
-import { AgendamentoScreen } from '../views/AgendamentoScreen';
-import { DashboardScreen } from '../views/DashboardScreen';
-import Cadastro from '../Cadastro/Cadastro';
-import TelaLogin from '../Login/TelaLogin';
+import {NavigationContainer} from '@react-navigation/native';
+import {createNativeStackNavigator} from '@react-navigation/native-stack';
+import {ClienteScreen} from '../views/ClienteScreen';
+import {ServicoScreen} from '../views/ServicoScreen';
+import {BarbeiroScreen} from '../components/LoginBarbeiro';
+import {ProdutoScreen} from '../views/ProdutoScreen';
+import {AgendamentoScreen} from '../views/AgendamentoScreen';
+import {DashboardScreen} from '../views/DashboardScreen';
+import {LoginScreen} from '../screens/LoginScreen';
+import {CadastroScreen} from '../screens/CadastroScreen';
+import {NativeStackScreenProps} from '@react-navigation/native-stack';
 
 export type RootStackParamList = {
   Clientes: undefined;
@@ -18,29 +19,34 @@ export type RootStackParamList = {
   Agendamento: undefined;
   Dashboard: undefined;
   Cadastro: undefined;
-  TelaLogin: undefined
-  TelaTestes: undefined;
+  Login: undefined;
+  Cliente: undefined;
 };
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
-const ClientesWrapper = (props: any) => (
+type ClientesWrapperProps = NativeStackScreenProps<
+  RootStackParamList,
+  'Clientes'
+>;
+
+const ClientesWrapper: React.FC<ClientesWrapperProps> = props => (
   <ClienteScreen
     {...props}
     onLogout={async (): Promise<void> => {
-      props.navigation.navigate('TelaLogin');
+      props.navigation.navigate('Login');
     }}
   />
 );
 
-export const AppNavigator = () => {
+export const AppNavigator: React.FC = () => {
   return (
     <NavigationContainer>
       <Stack.Navigator
-        initialRouteName="Dashboard"
+        initialRouteName="Login"
         screenOptions={{
           headerStyle: {
-        backgroundColor: '#2196F3',
+            backgroundColor: '#2196F3',
           },
           headerTintColor: '#fff',
           headerTitleStyle: {
@@ -48,61 +54,46 @@ export const AppNavigator = () => {
           },
         }}>
         <Stack.Screen
+          name="Login"
+          component={LoginScreen}
+          options={{title: 'Login'}}
+        />
+        <Stack.Screen
+          name="Cadastro"
+          component={CadastroScreen}
+          options={{title: 'Cadastro'}}
+        />
+        <Stack.Screen
           name="Dashboard"
           component={DashboardScreen}
-          options={{ title: 'Dashboard' }}
+          options={{title: 'Dashboard'}}
         />
         <Stack.Screen
           name="Clientes"
           component={ClientesWrapper}
-          options={{ title: 'Clientes' }}
+          options={{title: 'Clientes'}}
         />
         <Stack.Screen
           name="Servicos"
           component={ServicoScreen}
-          options={{ title: 'Serviços' }}
+          options={{title: 'Serviços'}}
         />
         <Stack.Screen
           name="Barbeiros"
           component={BarbeiroScreen}
-          options={{ title: 'Barbeiros' }}
+          options={{title: 'Barbeiros'}}
         />
         <Stack.Screen
           name="Produtos"
           component={ProdutoScreen}
-          options={{ title: 'Produtos' }}
+          options={{title: 'Produtos'}}
         />
         <Stack.Screen
           name="Agendamento"
           component={AgendamentoScreen}
-          options={{ title: 'Agendamentos' }}
+          options={{title: 'Agendamentos'}}
         />
-
-        <Stack.Screen
-          name="Cadastro"
-          component={Cadastro}
-          options={{ title: 'Cadastro' }}
-        />
-
-
-        <Stack.Screen
-          name="TelaLogin"
-          component={TelaLogin}
-          options={{ title: 'TelaLogin' }}
-        />
-
-
-
-        <Stack.Screen
-          name="TelaTestes"
-          component={TelaLogin}
-          options={{ title: 'Testes' }}
-        />
-
-
-
       </Stack.Navigator>
     </NavigationContainer>
   );
-
 };

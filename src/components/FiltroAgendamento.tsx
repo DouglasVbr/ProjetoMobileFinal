@@ -1,8 +1,7 @@
 import React from 'react';
-import {View, Text, Modal, TouchableOpacity, StyleSheet} from 'react-native';
+import {View, Text, Modal, TouchableOpacity} from 'react-native';
 import {Agendamento} from '../models/types';
-import{globalStyles} from '../styles/globalStyles';
-
+import {globalStyles} from '../styles/globalStyles';
 
 interface StatusHistoryProps {
   visible: boolean;
@@ -35,7 +34,9 @@ export const StatusHistory: React.FC<StatusHistoryProps> = ({
                 {new Date(item.data).toLocaleString()}
               </Text>
               {item.observacao && (
-                <Text style={globalStyles.observacaoText}>{item.observacao}</Text>
+                <Text style={globalStyles.observacaoText}>
+                  {item.observacao}
+                </Text>
               )}
             </View>
           ))}
@@ -48,5 +49,3 @@ export const StatusHistory: React.FC<StatusHistoryProps> = ({
     </Modal>
   );
 };
-
-

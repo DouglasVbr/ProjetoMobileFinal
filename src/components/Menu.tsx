@@ -11,7 +11,11 @@ type MenuItem = {
   route: keyof RootStackParamList;
 };
 
-export const Menu: React.FC = () => {
+type MenuProps = {
+  onLogout?: () => void | Promise<void>;
+};
+
+export const Menu: React.FC<MenuProps> = ({onLogout}) => {
   const navigation = useNavigation<NavigationProp>();
 
   const menuItems: MenuItem[] = [
@@ -33,6 +37,11 @@ export const Menu: React.FC = () => {
           <Text style={styles.menuText}>{item.name}</Text>
         </TouchableOpacity>
       ))}
+      {onLogout && (
+        <TouchableOpacity style={styles.menuItem} onPress={onLogout}>
+          <Text style={[styles.menuText, styles.logoutText]}>Sair</Text>
+        </TouchableOpacity>
+      )}
     </View>
   );
 };
@@ -54,5 +63,8 @@ const styles = StyleSheet.create({
     color: '#2196F3',
     fontSize: 12,
     textAlign: 'center',
+  },
+  logoutText: {
+    color: '#f44336',
   },
 });

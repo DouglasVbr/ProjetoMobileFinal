@@ -1,12 +1,17 @@
-import React, {useEffect, useState} from 'react';
-import {View, StyleSheet, ActivityIndicator, Text, ScrollView} from 'react-native';
+import React, {useEffect, useState, useCallback} from 'react';
+import {
+  View,
+  StyleSheet,
+  ActivityIndicator,
+  Text,
+  ScrollView,
+} from 'react-native';
 import {Menu} from '../components/Menu';
 import {
   AgendamentoStorage,
   BarbeiroStorage,
   ServicoStorage,
-  ClienteStorage
-   
+  ClienteStorage,
 } from '../services/storage';
 import {Agendamento, Barbeiro, Servico} from '../models/types';
 
@@ -18,42 +23,25 @@ interface RelatorioBarbeiro {
 
 export const TelaDeLucros: React.FC = () => {
   const [loading, setLoading] = useState(true);
-  const [agendamentos, setAgendamentos] = useState<Agendamento[]>([]);
-  const [barbeiros, setBarbeiros] = useState<Barbeiro[]>([]);
-  const [servicos, setServicos] = useState<Servico[]>([]);
-  const [relatorioMensal, setRelatorioMensal] = useState<RelatorioBarbeiro[]>([]);
+  const [relatorioMensal, setRelatorioMensal] = useState<RelatorioBarbeiro[]>(
+    [],
+  );
   const [totalMes, setTotalMes] = useState({
     atendimentos: 0,
     valor: 0,
   });
-  const [usuarioAutorizado, setUsuarioAutorizado] = useState(false);
-  const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    verificarAutorizacao();
-    carregarDados();
-  }, []);
-
-  const verificarAutorizacao = async () => {
-    
-    const clientes = await ClienteStorage.getAll();
-    
-    
-    const usuarioLogadoEmail = ""; 
-    const usuario = clientes.find(c => c.email === usuarioLogadoEmail);
-    setUsuarioAutorizado(usuario?.nome === 'barbeiro');
-  };
-
-  const carregarDados = async () => {
+  const carregarDados = useCallback(async () => {
     try {
       setLoading(true);
-      setError(null); // Limpa erro anterior
-      
-      const [agendamentosData, barbeirosData, servicosData] = await Promise.all([
-        AgendamentoStorage.getAll(),
-        BarbeiroStorage.getAll(),
-        ServicoStorage.getAll(),
-      ]);
+
+      const [agendamentosData, barbeirosData, servicosData] = await Promise.all(
+        [
+          AgendamentoStorage.getAll(),
+          BarbeiroStorage.getAll(),
+          ServicoStorage.getAll(),
+        ],
+      );
 
       if (!barbeirosData.length) {
         throw new Error('Nenhum barbeiro cadastrado');
@@ -63,18 +51,34 @@ export const TelaDeLucros: React.FC = () => {
         throw new Error('Nenhum serviço cadastrado');
       }
 
-      setAgendamentos(agendamentosData);
-      setBarbeiros(barbeirosData);
-      setServicos(servicosData);
-
       calcularRelatorioMensal(agendamentosData, barbeirosData, servicosData);
     } catch (error) {
       console.error('Erro ao carregar dados:', error);
-      setError(error instanceof Error ? error.message : 'Erro ao carregar dados');
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
+
+  const verificarAutorizacao = useCallback(async () => {
+    const clientes = await ClienteStorage.getAll();
+    const usuarioLogadoEmail = '';
+    const usuario = clientes.find(c => c.email === usuarioLogadoEmail);
+    if (usuario?.nome !== 'barbeiro') {
+      throw new Error('Usuário não autorizado');
+    }
+  }, []);
+
+  useEffect(() => {
+    const inicializar = async () => {
+      try {
+        await verificarAutorizacao();
+        await carregarDados();
+      } catch (error) {
+        console.error('Erro na inicialização:', error);
+      }
+    };
+    inicializar();
+  }, [carregarDados, verificarAutorizacao]);
 
   const calcularRelatorioMensal = (
     agendamentos: Agendamento[],
@@ -83,17 +87,17 @@ export const TelaDeLucros: React.FC = () => {
   ) => {
     const mesAtual = new Date().getMonth();
     const anoAtual = new Date().getFullYear();
-    
+
     const agendamentosMes = agendamentos.filter(agend => {
       const data = new Date(agend.data);
       return data.getMonth() === mesAtual && data.getFullYear() === anoAtual;
     });
-  
+
     if (!barbeiros.length || !servicos.length) {
       console.warn('Nenhum barbeiro ou serviço cadastrado');
       return;
     }
-  
+
     const relatorio: RelatorioBarbeiro[] = barbeiros.map(barbeiro => {
       const atendimentosBarbeiro = agendamentosMes.filter(
         agend => agend.barbeiroId === barbeiro.id,
@@ -133,8 +137,6 @@ export const TelaDeLucros: React.FC = () => {
       </View>
     );
   }
-
-  
 
   return (
     <View style={styles.container}>

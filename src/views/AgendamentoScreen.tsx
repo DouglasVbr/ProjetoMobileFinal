@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, {useState, useEffect} from 'react';
 import {
   View,
   ScrollView,
@@ -9,27 +9,33 @@ import {
   ActivityIndicator,
 } from 'react-native';
 import DateTimePicker from '@react-native-community/datetimepicker';
-import { v4 as uuidv4 } from 'uuid';
-import { FormInput } from '../components/FormInput';
-import { Button } from '../components/Button';
-import { Menu } from '../components/Menu';
-import { Agendamento, Cliente, Barbeiro, Servico } from '../models/types';
-import { AgendamentoStorage } from '../services/storage';
-import { ClienteStorage, BarbeiroStorage, ServicoStorage } from '../services/storage';
-import { SelectionModal } from '../components/SelectionModal';
-import { StatusManager } from '../components/StatusAgenda';
-import { StatusHistory } from '../components/FiltroAgendamento';
-import { AvaliacaoModal } from '../components/AvaliacaoModal';
-import { notificationService } from '../services/notifications';
+import {v4 as uuidv4} from 'uuid';
+import {FormInput} from '../components/FormInput';
+import {Button} from '../components/Button';
+import {Menu} from '../components/Menu';
+import {Agendamento, Cliente, Barbeiro, Servico} from '../models/types';
+import {AgendamentoStorage} from '../services/storage';
+import {
+  ClienteStorage,
+  BarbeiroStorage,
+  ServicoStorage,
+} from '../services/storage';
+import {SelectionModal} from '../components/SelectionModal';
+import {StatusManager} from '../components/StatusAgenda';
+import {StatusHistory} from '../components/FiltroAgendamento';
+import {AvaliacaoModal} from '../components/AvaliacaoModal';
+import {notificationService} from '../services/notifications';
 
-export const AgendamentoScreen = () => {
+export const AgendamentoScreen: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [agendamentos, setAgendamentos] = useState<Agendamento[]>([]);
   const [clientes, setClientes] = useState<Cliente[]>([]);
   const [barbeiros, setBarbeiros] = useState<Barbeiro[]>([]);
   const [servicos, setServicos] = useState<Servico[]>([]);
   const [selectedCliente, setSelectedCliente] = useState<Cliente | null>(null);
-  const [selectedBarbeiro, setSelectedBarbeiro] = useState<Barbeiro | null>(null);
+  const [selectedBarbeiro, setSelectedBarbeiro] = useState<Barbeiro | null>(
+    null,
+  );
   const [selectedServico, setSelectedServico] = useState<Servico | null>(null);
   const [date, setDate] = useState(new Date());
   const [showDatePicker, setShowDatePicker] = useState(false);
@@ -41,7 +47,8 @@ export const AgendamentoScreen = () => {
   const [showServicoModal, setShowServicoModal] = useState(false);
   const [showStatusManager, setShowStatusManager] = useState(false);
   const [showAvaliacaoModal, setShowAvaliacaoModal] = useState(false);
-  const [selectedAgendamento, setSelectedAgendamento] = useState<Agendamento | null>(null);
+  const [selectedAgendamento, setSelectedAgendamento] =
+    useState<Agendamento | null>(null);
 
   useEffect(() => {
     const loadData = async () => {
@@ -72,7 +79,7 @@ export const AgendamentoScreen = () => {
 
   const validateForm = (): boolean => {
     const errors: string[] = [];
-    
+
     if (!selectedCliente) errors.push('Selecione um cliente');
     if (!selectedBarbeiro) errors.push('Selecione um barbeiro');
     if (!selectedServico) errors.push('Selecione um serviço');
@@ -92,13 +99,13 @@ export const AgendamentoScreen = () => {
 
     try {
       setLoading(true);
-      
+
       const dataAgendamento = new Date(
         date.getFullYear(),
         date.getMonth(),
         date.getDate(),
         time.getHours(),
-        time.getMinutes()
+        time.getMinutes(),
       );
 
       const novoAgendamento: Agendamento = {
@@ -112,11 +119,13 @@ export const AgendamentoScreen = () => {
         data: dataAgendamento.toISOString(),
         status: 'agendado',
         observacoes: observacoes.trim(),
-        historicoStatus: [{
-          status: 'agendado',
-          data: new Date().toISOString(),
-          observacao: 'Agendamento criado'
-        }],
+        historicoStatus: [
+          {
+            status: 'agendado',
+            data: new Date().toISOString(),
+            observacao: 'Agendamento criado',
+          },
+        ],
       };
 
       await AgendamentoStorage.save(novoAgendamento);
@@ -146,7 +155,7 @@ export const AgendamentoScreen = () => {
   const handleStatusChange = async (
     agendamento: Agendamento,
     novoStatus: Agendamento['status'],
-    observacao?: string
+    observacao?: string,
   ) => {
     try {
       const agendamentoAtualizado: Agendamento = {
@@ -157,15 +166,15 @@ export const AgendamentoScreen = () => {
           {
             status: novoStatus,
             data: new Date().toISOString(),
-            observacao: observacao || novoStatus
-          }
+            observacao: observacao || novoStatus,
+          },
         ],
       };
 
       await AgendamentoStorage.update(agendamentoAtualizado); // Adicionar o parâmetro
       notificationService.notificarAlteracaoStatus(agendamento, novoStatus);
-      setAgendamentos(prev => 
-        prev.map(a => a.id === agendamento.id ? agendamentoAtualizado : a)
+      setAgendamentos(prev =>
+        prev.map(a => (a.id === agendamento.id ? agendamentoAtualizado : a)),
       );
     } catch (error) {
       console.error('Erro ao atualizar status:', error);
@@ -197,7 +206,7 @@ export const AgendamentoScreen = () => {
             }
           },
         },
-      ]
+      ],
     );
   };
 
@@ -215,8 +224,10 @@ export const AgendamentoScreen = () => {
       };
 
       await AgendamentoStorage.update(agendamentoAtualizado);
-      setAgendamentos(prev => 
-        prev.map(a => a.id === selectedAgendamento.id ? agendamentoAtualizado : a)
+      setAgendamentos(prev =>
+        prev.map(a =>
+          a.id === selectedAgendamento.id ? agendamentoAtualizado : a,
+        ),
       );
       setShowAvaliacaoModal(false);
       Alert.alert('Sucesso', 'Avaliação registrada com sucesso!');
@@ -226,7 +237,7 @@ export const AgendamentoScreen = () => {
     }
   };
 
-  const AgendamentoItem = ({ item }: { item: Agendamento }) => (
+  const AgendamentoItem = ({item}: {item: Agendamento}) => (
     <View style={styles.agendamentoItem}>
       <View style={styles.agendamentoInfo}>
         <Text style={styles.agendamentoTitle}>{item.clienteNome}</Text>
@@ -235,9 +246,16 @@ export const AgendamentoScreen = () => {
         </Text>
         <Text style={styles.agendamentoDate}>
           {new Date(item.data).toLocaleDateString('pt-BR')} às{' '}
-          {new Date(item.data).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}
+          {new Date(item.data).toLocaleTimeString('pt-BR', {
+            hour: '2-digit',
+            minute: '2-digit',
+          })}
         </Text>
-        <Text style={[styles.agendamentoStatus, { color: getStatusColor(item.status) }]}>
+        <Text
+          style={[
+            styles.agendamentoStatus,
+            {color: getStatusColor(item.status)},
+          ]}>
           Status: {getStatusText(item.status)}
         </Text>
         {item.avaliacao && (
@@ -276,25 +294,39 @@ export const AgendamentoScreen = () => {
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'agendado': return '#4CAF50';
-      case 'confirmado': return '#2196F3';
-      case 'em_andamento': return '#FF9800';
-      case 'concluido': return '#4CAF50';
-      case 'cancelado': return '#F44336';
-      case 'nao_compareceu': return '#9E9E9E';
-      default: return '#9E9E9E';
+      case 'agendado':
+        return '#4CAF50';
+      case 'confirmado':
+        return '#2196F3';
+      case 'em_andamento':
+        return '#FF9800';
+      case 'concluido':
+        return '#4CAF50';
+      case 'cancelado':
+        return '#F44336';
+      case 'nao_compareceu':
+        return '#9E9E9E';
+      default:
+        return '#9E9E9E';
     }
   };
 
   const getStatusText = (status: string) => {
     switch (status) {
-      case 'agendado': return 'Agendado';
-      case 'confirmado': return 'Confirmado';
-      case 'em_andamento': return 'Em Andamento';
-      case 'concluido': return 'Concluído';
-      case 'cancelado': return 'Cancelado';
-      case 'nao_compareceu': return 'Não Compareceu';
-      default: return status;
+      case 'agendado':
+        return 'Agendado';
+      case 'confirmado':
+        return 'Confirmado';
+      case 'em_andamento':
+        return 'Em Andamento';
+      case 'concluido':
+        return 'Concluído';
+      case 'cancelado':
+        return 'Cancelado';
+      case 'nao_compareceu':
+        return 'Não Compareceu';
+      default:
+        return status;
     }
   };
 
@@ -326,7 +358,9 @@ export const AgendamentoScreen = () => {
             style={styles.selectionButton}
             onPress={() => setShowBarbeiroModal(true)}>
             <Text style={styles.selectionButtonText}>
-              {selectedBarbeiro ? selectedBarbeiro.nome : 'Selecione um barbeiro'}
+              {selectedBarbeiro
+                ? selectedBarbeiro.nome
+                : 'Selecione um barbeiro'}
             </Text>
           </TouchableOpacity>
 
@@ -363,7 +397,10 @@ export const AgendamentoScreen = () => {
             style={styles.selectionButton}
             onPress={() => setShowTimePicker(true)}>
             <Text style={styles.selectionButtonText}>
-              {time.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}
+              {time.toLocaleTimeString('pt-BR', {
+                hour: '2-digit',
+                minute: '2-digit',
+              })}
             </Text>
           </TouchableOpacity>
           {showTimePicker && (
@@ -400,13 +437,16 @@ export const AgendamentoScreen = () => {
         <View style={styles.listContainer}>
           <Text style={styles.sectionTitle}>Agendamentos</Text>
           {agendamentos.length === 0 ? (
-            <Text style={styles.emptyListText}>Nenhum agendamento encontrado</Text>
+            <Text style={styles.emptyListText}>
+              Nenhum agendamento encontrado
+            </Text>
           ) : (
             agendamentos
-              .sort((a, b) => new Date(a.data).getTime() - new Date(b.data).getTime())
-              .map(item => (
-                <AgendamentoItem key={item.id} item={item} />
-              ))
+              .sort(
+                (a, b) =>
+                  new Date(a.data).getTime() - new Date(b.data).getTime(),
+              )
+              .map(item => <AgendamentoItem key={item.id} item={item} />)
           )}
         </View>
       </ScrollView>

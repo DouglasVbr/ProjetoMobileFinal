@@ -12,7 +12,7 @@ type ClienteScreenProps = {
   onLogout: () => void | Promise<void>;
 };
 
-export function ClienteScreen({ onLogout }: ClienteScreenProps) {
+export function ClienteScreen({onLogout}: ClienteScreenProps) {
   const [cliente, setCliente] = useState<Partial<Cliente>>({
     nome: '',
     telefone: '',
@@ -117,7 +117,7 @@ export function ClienteScreen({ onLogout }: ClienteScreenProps) {
 
   return (
     <View style={{flex: 1}}>
-      <Menu />
+      <Menu onLogout={onLogout} />
       <ScrollView style={globalStyles.container}>
         <View style={{padding: 20}}>
           <FormInput
@@ -166,4 +166,4 @@ export function ClienteScreen({ onLogout }: ClienteScreenProps) {
       </ScrollView>
     </View>
   );
-};
+}

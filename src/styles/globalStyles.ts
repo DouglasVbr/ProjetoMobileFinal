@@ -1,7 +1,6 @@
 import {StyleSheet} from 'react-native';
 
 export const globalStyles = StyleSheet.create({
-
   modalContainer: {
     flex: 1,
     backgroundColor: 'rgba(0, 0, 0, 0.5)',
@@ -120,5 +119,4 @@ export const globalStyles = StyleSheet.create({
     color: '#666',
     marginBottom: 8,
   },
-  
 });

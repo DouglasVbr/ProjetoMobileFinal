@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, {useState} from 'react';
 import {
   View,
   Text,
@@ -9,13 +9,15 @@ import {
   StyleSheet,
   ScrollView,
   Modal,
-  Image,
 } from 'react-native';
-import { useNavigation } from '@react-navigation/native';
-import { RootStackParamList } from '../navigation/AppNavigator';
-import { StackNavigationProp } from '@react-navigation/stack';
+import {useNavigation} from '@react-navigation/native';
+import {RootStackParamList} from '../navigation/AppNavigator';
+import {StackNavigationProp} from '@react-navigation/stack';
 
-type TestesScreenNavigationProp = StackNavigationProp<RootStackParamList, 'TelaTestes'>;
+type TestesScreenNavigationProp = StackNavigationProp<
+  RootStackParamList,
+  'Login'
+>;
 
 const TelaTestes = () => {
   const navigation = useNavigation<TestesScreenNavigationProp>();
@@ -32,7 +34,7 @@ const TelaTestes = () => {
         <Text style={styles.subtitulo}>Navegação</Text>
         <Button
           title="Ir para Login"
-          onPress={() => navigation.navigate('TelaLogin')}
+          onPress={() => navigation.navigate('Login')}
         />
         <View style={styles.espacador} />
         <Button
@@ -68,8 +70,7 @@ const TelaTestes = () => {
         <View style={styles.espacador} />
         <TouchableOpacity
           style={styles.botaoCustom}
-          onPress={() => Alert.alert('TouchableOpacity pressionado')}
-        >
+          onPress={() => Alert.alert('TouchableOpacity pressionado')}>
           <Text style={styles.textoBotao}>Botão Customizado</Text>
         </TouchableOpacity>
       </View>
@@ -77,23 +78,16 @@ const TelaTestes = () => {
       {/* Modal */}
       <View style={styles.sessao}>
         <Text style={styles.subtitulo}>Modal</Text>
-        <Button
-          title="Abrir Modal"
-          onPress={() => setModalVisivel(true)}
-        />
+        <Button title="Abrir Modal" onPress={() => setModalVisivel(true)} />
         <Modal
           animationType="slide"
           transparent={true}
           visible={modalVisivel}
-          onRequestClose={() => setModalVisivel(false)}
-        >
+          onRequestClose={() => setModalVisivel(false)}>
           <View style={styles.modalFundo}>
             <View style={styles.modalConteudo}>
               <Text>Este é um Modal de teste</Text>
-              <Button
-                title="Fechar"
-                onPress={() => setModalVisivel(false)}
-              />
+              <Button title="Fechar" onPress={() => setModalVisivel(false)} />
             </View>
           </View>
         </Modal>
@@ -104,14 +98,16 @@ const TelaTestes = () => {
         <Text style={styles.subtitulo}>Alert</Text>
         <Button
           title="Mostrar Alert"
-          onPress={() => Alert.alert(
-            'Título do Alert',
-            'Esta é uma mensagem de alerta padrão.',
-            [
-              { text: 'Cancelar', style: 'cancel' },
-              { text: 'OK', onPress: () => console.log('OK Pressed') }
-            ]
-          )}
+          onPress={() =>
+            Alert.alert(
+              'Título do Alert',
+              'Esta é uma mensagem de alerta padrão.',
+              [
+                {text: 'Cancelar', style: 'cancel'},
+                {text: 'OK', onPress: () => console.log('OK Pressed')},
+              ],
+            )
+          }
         />
       </View>
 
@@ -119,16 +115,14 @@ const TelaTestes = () => {
       <View style={styles.sessao}>
         <Text style={styles.subtitulo}>Switch Simulado</Text>
         <TouchableOpacity
-          style={[
-            styles.switchContainer,
-            switchAtivo && styles.switchAtivo
-          ]}
-          onPress={() => setSwitchAtivo(!switchAtivo)}
-        >
-          <View style={[
-            styles.switchCircle,
-            switchAtivo && styles.switchCircleAtivo
-          ]} />
+          style={[styles.switchContainer, switchAtivo && styles.switchAtivo]}
+          onPress={() => setSwitchAtivo(!switchAtivo)}>
+          <View
+            style={[
+              styles.switchCircle,
+              switchAtivo && styles.switchCircleAtivo,
+            ]}
+          />
         </TouchableOpacity>
         <Text>Estado: {switchAtivo ? 'Ativo' : 'Inativo'}</Text>
       </View>
@@ -216,7 +210,7 @@ const styles = StyleSheet.create({
     backgroundColor: 'white',
   },
   switchCircleAtivo: {
-    transform: [{ translateX: 20 }],
+    transform: [{translateX: 20}],
   },
 });
 

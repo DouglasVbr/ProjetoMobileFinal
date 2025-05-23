@@ -10,22 +10,19 @@ class NotificationService {
 
   private configurePushNotifications() {
     PushNotification.configure({
-      onRegister: function (token: {os: string; token: string}) {
+      onRegister: function (token) {
         console.log('TOKEN:', token);
       },
-
       onNotification: function (
         notification: Omit<ReceivedNotification, 'userInfo'>,
       ) {
         console.log('NOTIFICATION:', notification);
       },
-
       permissions: {
         alert: true,
         badge: true,
         sound: true,
       },
-
       popInitialNotification: true,
       requestPermissions: true,
     });
@@ -40,25 +37,22 @@ class NotificationService {
         importance: 4,
         vibrate: true,
       },
-      (created: boolean) => console.log(`Canal criado: ${created}`),
+      created => console.log(`Canal criado: ${created}`),
     );
   }
 
   public agendarNotificacao(agendamento: Agendamento) {
-    const dataAgendamento = new Date(agendamento.data);
-    const dataNotificacao = new Date(dataAgendamento);
-    dataNotificacao.setHours(dataNotificacao.getHours() - 1); // Notificar 1 hora antes
+    const data = new Date(agendamento.data);
+    const horaAntes = new Date(data.getTime() - 60 * 60 * 1000); // 1 hora antes
 
-    if (dataNotificacao > new Date()) {
-      PushNotification.localNotificationSchedule({
-        channelId: 'agendamentos',
-        title: 'Lembrete de Agendamento',
-        message: 'Você tem um agendamento em 1 hora',
-        date: dataNotificacao,
-        allowWhileIdle: true,
-        repeatType: 'day',
-      });
-    }
+    PushNotification.localNotificationSchedule({
+      channelId: 'agendamentos',
+      title: 'Lembrete de Agendamento',
+      message: `Você tem um agendamento em 1 hora com ${agendamento.barbeiroNome}`,
+      date: horaAntes,
+      allowWhileIdle: true,
+      repeatType: 'day',
+    });
   }
 
   public cancelarNotificacao(agendamentoId: string) {
