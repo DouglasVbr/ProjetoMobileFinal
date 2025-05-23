@@ -1,13 +1,14 @@
 import React from 'react';
-import {NavigationContainer} from '@react-navigation/native';
-import {createNativeStackNavigator} from '@react-navigation/native-stack';
-import {ClienteScreen} from '../views/ClienteScreen';
-import {ServicoScreen} from '../views/ServicoScreen';
-import {BarbeiroScreen} from '../components/LoginBarbeiro';
-import {ProdutoScreen} from '../views/ProdutoScreen';
-import {AgendamentoScreen} from '../views/AgendamentoScreen';
-import {DashboardScreen} from '../views/DashboardScreen';
+import { NavigationContainer } from '@react-navigation/native';
+import { createNativeStackNavigator } from '@react-navigation/native-stack';
+import { ClienteScreen } from '../views/ClienteScreen';
+import { ServicoScreen } from '../views/ServicoScreen';
+import { BarbeiroScreen } from '../components/LoginBarbeiro';
+import { ProdutoScreen } from '../views/ProdutoScreen';
+import { AgendamentoScreen } from '../views/AgendamentoScreen';
+import { DashboardScreen } from '../views/DashboardScreen';
 import Cadastro from '../Cadastro/Cadastro';
+import TelaLogin from '../Login/TelaLogin';
 
 export type RootStackParamList = {
   Clientes: undefined;
@@ -17,10 +18,20 @@ export type RootStackParamList = {
   Agendamento: undefined;
   Dashboard: undefined;
   Cadastro: undefined;
-  //  rotas
+  TelaLogin: undefined
+  TelaTestes: undefined;
 };
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
+
+const ClientesWrapper = (props: any) => (
+  <ClienteScreen
+    {...props}
+    onLogout={async (): Promise<void> => {
+      props.navigation.navigate('TelaLogin');
+    }}
+  />
+);
 
 export const AppNavigator = () => {
   return (
@@ -29,7 +40,7 @@ export const AppNavigator = () => {
         initialRouteName="Dashboard"
         screenOptions={{
           headerStyle: {
-            backgroundColor: '#2196F3',
+        backgroundColor: '#2196F3',
           },
           headerTintColor: '#fff',
           headerTitleStyle: {
@@ -39,48 +50,59 @@ export const AppNavigator = () => {
         <Stack.Screen
           name="Dashboard"
           component={DashboardScreen}
-          options={{title: 'Dashboard'}}
+          options={{ title: 'Dashboard' }}
         />
         <Stack.Screen
           name="Clientes"
-          options={{title: 'Clientes'}}
-        >
-          {props => (
-            <ClienteScreen
-              {...props}
-              onLogout={() => {
-                
-              }}
-            />
-          )}
-        </Stack.Screen>
+          component={ClienteScreen}
+          options={{ title: 'Clientes' }}
+        />
         <Stack.Screen
           name="Servicos"
           component={ServicoScreen}
-          options={{title: 'Serviços'}}
+          options={{ title: 'Serviços' }}
         />
         <Stack.Screen
           name="Barbeiros"
           component={BarbeiroScreen}
-          options={{title: 'Barbeiros'}}
+          options={{ title: 'Barbeiros' }}
         />
         <Stack.Screen
           name="Produtos"
           component={ProdutoScreen}
-          options={{title: 'Produtos'}}
+          options={{ title: 'Produtos' }}
         />
         <Stack.Screen
           name="Agendamento"
           component={AgendamentoScreen}
-          options={{title: 'Agendamentos'}}
+          options={{ title: 'Agendamentos' }}
         />
-        
+
         <Stack.Screen
           name="Cadastro"
           component={Cadastro}
-          options={{title: 'Cadastro'}}
+          options={{ title: 'Cadastro' }}
         />
+
+
+        <Stack.Screen
+          name="TelaLogin"
+          component={TelaLogin}
+          options={{ title: 'TelaLogin' }}
+        />
+
+
+
+        <Stack.Screen
+          name="TelaTestes"
+          component={TelaLogin}
+          options={{ title: 'Testes' }}
+        />
+
+
+
       </Stack.Navigator>
     </NavigationContainer>
   );
+
 };

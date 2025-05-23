@@ -14,6 +14,7 @@ import {
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import firestore from '@react-native-firebase/firestore';
 import styles from '../styles/ClienteScreenStyles';
+import TelaLogin from '../Login/TelaLogin';
 
 interface Pessoa {
   id: string;
@@ -164,7 +165,7 @@ function Cadastro({ navigation }: { navigation: any }) {
         await salvarPessoas(atualizado);
         Alert.alert('Cadastro realizado com sucesso!');
         // Redireciona para a tela de login após cadastro bem-sucedido
-        navigation.navigate('Login'); //    
+        navigation.navigate('TelaLogin'); //    
       } catch (e) {
         Alert.alert('Erro ao cadastrar no Firebase: ' + String(e));
       }
