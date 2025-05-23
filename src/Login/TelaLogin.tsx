@@ -124,7 +124,7 @@ function TelaLogin({ navigation }: { navigation: any }) {
     return (
         <View style={styles.container}>
             <Image
-                source={require('../components/img/LogoPrincipal.png')}
+                source={require('../img/LogoPrincipal.png')}
                 style={styles.logo}
                 resizeMode="contain"
             />

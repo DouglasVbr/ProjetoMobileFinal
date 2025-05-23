@@ -54,7 +54,7 @@ export const AppNavigator = () => {
         />
         <Stack.Screen
           name="Clientes"
-          component={ClienteScreen}
+          component={ClientesWrapper}
           options={{ title: 'Clientes' }}
         />
         <Stack.Screen
